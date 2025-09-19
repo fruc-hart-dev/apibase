@@ -21,6 +21,31 @@ public static class AuthEndpoints
         .AllowAnonymous()
         .WithOpenApi();
 
+        app.MapPost("/auth/refresh", async ([FromBody] RefreshTokenRequest request, IAuthService authService) =>
+        {
+            var response = await authService.RefreshTokenAsync(request.RefreshToken);
+            
+            if (response == null)
+                return Results.Unauthorized();
+            
+            return Results.Ok(response);
+        })
+        .WithName("RefreshToken")
+        .AllowAnonymous()
+        .WithOpenApi();
+
+        app.MapPost("/auth/revoke", async ([FromBody] RevokeTokenRequest request, IAuthService authService) =>
+        {
+            var result = await authService.RevokeTokenAsync(request.RefreshToken);
+            
+            if (!result)
+                return Results.BadRequest();
+            
+            return Results.Ok();
+        })
+        .WithName("RevokeToken")
+        .WithOpenApi();
+
         return app;
     }
 }

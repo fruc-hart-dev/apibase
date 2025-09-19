@@ -54,6 +54,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            RequireExpirationTime = true,
+            ClockSkew = TimeSpan.Zero, // Disable the default 5 minute clock skew
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
@@ -69,6 +71,7 @@ builder.Services.AddAuthorization(options =>
 
 // Register services
 builder.Services.AddSingleton<IUserService, JsonUserService>();
+builder.Services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
