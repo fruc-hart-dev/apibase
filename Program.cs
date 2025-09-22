@@ -1,11 +1,17 @@
 using System.Text;
+using ApiBase.Data;
 using ApiBase.Endpoints;
 using ApiBase.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure SQL Server
+builder.Services.AddDbContext<ApiDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -70,8 +76,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 // Register services
-builder.Services.AddSingleton<IUserService, JsonUserService>();
-builder.Services.AddSingleton<IRefreshTokenService, RefreshTokenService>();
+builder.Services.AddScoped<IUserService, DbUserService>();
+builder.Services.AddScoped<IRefreshTokenService, DbRefreshTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();

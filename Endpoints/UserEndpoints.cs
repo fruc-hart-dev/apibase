@@ -44,11 +44,13 @@ public static class UserEndpoints
         // Update user
         app.MapPut("/users/{id}", async (Guid id, [FromBody] User user, IUserService userService) =>
         {
-            var updatedUser = await userService.UpdateUserAsync(id, user);
-            if (updatedUser == null)
+            // Asegurarse de que el ID en la ruta coincida con el ID del usuario
+            user.Id = id;
+            var success = await userService.UpdateUserAsync(user);
+            if (!success)
                 return Results.NotFound();
             
-            return Results.Ok(updatedUser);
+            return Results.Ok(user);
         })
         .WithName("UpdateUser")
         .RequireAuthorization()

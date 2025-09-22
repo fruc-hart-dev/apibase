@@ -31,13 +31,12 @@ public class AuthService : IAuthService
 
     public async Task<LoginResponse?> AuthenticateAsync(LoginRequest request)
     {
-        // Get all users and find the one with matching credentials
-        var users = await _userService.GetAllUsersAsync();
-        var user = users.FirstOrDefault(u => 
-            u.Name == request.Username && 
-            u.Password == request.Password); // In a real app, use password hashing!
-
+        var user = await _userService.GetUserByNameAsync(request.Username);
         if (user == null)
+            return null;
+            
+        // Verify the password
+        if (!PasswordHasher.VerifyPassword(request.Password, user.Password))
             return null;
 
         // Generate JWT token and refresh token
@@ -93,8 +92,7 @@ public class AuthService : IAuthService
         await _refreshTokenService.MarkRefreshTokenUsedAsync(refreshToken);
 
         // Get user and generate new tokens
-        var users = await _userService.GetAllUsersAsync();
-        var user = users.FirstOrDefault(u => u.Id.ToString() == savedRefreshToken.UserId);
+        var user = await _userService.GetUserByIdAsync(savedRefreshToken.UserId);
         if (user == null)
             return null;
 
